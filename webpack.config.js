@@ -9,13 +9,15 @@ const UglifyJsPlugin = require('uglify-js-plugin');//压缩js
 
 module.exports = {
 	devServer: { //先安装webpack-dev-server  开发服务器配置
-		port: 3000,
+		port: 3007,
 		progress: true,
-		contentBase: './dist' //设置服务开启资源位置默认是项目根文件夹
+		contentBase: './dist', //设置服务开启资源位置默认是项目根文件夹
+		open:true
 	},
 	entry: {
 		index: './src/index.js',
-		app: './src/app.js'
+		app: './src/app.js',
+		indexTs:'./src/index.ts'
 	},
 	mode: 'development',
 	optimization: { //优化项
@@ -66,6 +68,11 @@ module.exports = {
 					//"plugins": ["@babel/plugin-transform-runtime"]
 				}
 			},
+			{
+				test: /\.tsx?$/,
+				use: 'ts-loader',
+				// include: [resolve('src')]
+			  }
 			//js检测机制 先安装eslint eslint-loader
 			//webpack 设置loader
 			//根目录下新建配置文件 .eslintrc.js 制定规则
@@ -81,19 +88,47 @@ module.exports = {
 		],
 	},
 	output: {
-		filename: '[name].[hash:4].js',
+		filename: '[name].[hash:3].js',
 		path: path.resolve(__dirname, 'dist')
 		//将相对路径转绝对路径,当前路径 + dist
 	},
+	resolve: {//?! 别名需要研究
+		//extensions: ['.ts', '.tsx', '.js']
+	},
+	
 	plugins: [
 		new CleanWebpackPlugin(),
 		new HtmlWebpackPlugin({
+			chunks:['index'], //添加引入的js,也就是entry中的key,映入各自的js
 			template: './src/index.html',
-			filename: 'index.html',
+			filename: 'index1.html',
+			title:'index1',
 			hash: true
+			// minify:{
+			//     collapseWhitespace:true //折叠空白区域 也就是压缩代码
+			// },
+		}),
+		new HtmlWebpackPlugin({
+			chunks:['app'], 
+			template: './src/index2.html',
+			filename: 'index2.html',
+			title:'index2',
+			hash: true,
+		}),
+		new HtmlWebpackPlugin({
+			chunks:['indexTs'], 
+			template: './src/indexTs.html',
+			filename: 'indexTs.html',
+			title:'index-ts',
+			hash: true,
 		}),
 		new miniCssExtractPlugin({ //配置完成需要在响应的loder use 前的style-loader替换成miniCssExtractPlugin.loader 的配置
-			filename: 'style.css',
-		})
+			// filename: 'style.[name].css',
+			chunkFilename:"[name].css",//入口文件分别生成引入各种的css
+		}),
+		// new miniCssExtractPlugin({
+		// 	chunks:['app'], 
+		// 	filename: 'style.app.css',
+		// })
 	]
 }

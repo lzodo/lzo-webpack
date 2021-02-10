@@ -1,8 +1,8 @@
 console.log('this is index.js')
 
-require('./style.css');
-require('./style.scss');
-require('./style.less');
+require('./style.1.css');
+require('./style.3.scss');
+require('./style.2.less');
 
 let es6 = () =>{
     console.log('babel测试')

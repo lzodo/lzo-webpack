@@ -28,7 +28,11 @@ module.exports = {
   },
   resolve: {
     //?! 别名需要研究
+    // 使扩展名可以忽略
     //extensions: ['.ts', '.tsx', '.js']
+    alias:{
+      vue$:"vue/dist/vue.esm.js"
+    }
   },
   mode: "development",
   optimization: {
@@ -89,7 +93,6 @@ module.exports = {
         //exclude:排除
         //include:包含
         exclude: /node_modules/,
-        
         loader: "babel-loader",
         options: {
           presets: [

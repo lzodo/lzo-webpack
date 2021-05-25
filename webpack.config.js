@@ -6,14 +6,25 @@ const HtmlWebpackPlugin = require("html-webpack-plugin"); //通过 npm 安装
 const miniCssExtractPlugin = require("mini-css-extract-plugin"); //分离css,新建文件引入
 const OptimizeCssAssetsPlugin = require("optimize-css-assets-webpack-plugin"); //压缩css
 const UglifyJsPlugin = require("uglify-js-plugin"); //压缩js
+const uglifyjsWebpackPlugin = require("uglifyjs-webpack-plugin");
+
+//
+/**
+ * 拆分文件: 需要安装webpack-merge 插件进行合并
+ * 如果 base.config.js、dev.config.js（dev --config）、prod.config.js(build --config)
+ * const baseConfig = require("base.config");
+ * module.exports = webpackMerge(baseConfig,{devServer:{},....});将base合并到当前配置
+ * 
+ */
 
 module.exports = {
-  devServer: {
+  devServer: { //开放环境先缓存到内存中，资源从内存中读取，打包才会生成到硬盘上
     //先安装webpack-dev-server  开发服务器配置
     port: 3007,
     progress: true,
     contentBase: "./dist", //设置服务开启资源位置默认是项目根文件夹
     open: true,
+    //inline:true,//低版本实时刷新
   },
   entry: {
     index: "./src/index.js",
@@ -161,5 +172,10 @@ module.exports = {
     // 	chunks:['app'],
     // 	filename: 'style.app.css',
     // })
+    // 压缩js
+    new uglifyjsWebpackPlugin(),
+
+    // 其他
+    new webpack.BannerPlugin('横幅一些提示内容')
   ],
 };

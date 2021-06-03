@@ -7,6 +7,7 @@ const miniCssExtractPlugin = require("mini-css-extract-plugin"); //分离css,新
 const OptimizeCssAssetsPlugin = require("optimize-css-assets-webpack-plugin"); //压缩css
 const UglifyJsPlugin = require("uglify-js-plugin"); //压缩js
 const uglifyjsWebpackPlugin = require("uglifyjs-webpack-plugin");
+const { resolve } = require("path");
 
 //
 /**
@@ -42,6 +43,8 @@ module.exports = {
     // 使扩展名可以忽略
     //extensions: ['.ts', '.tsx', '.js']
     alias:{
+      '@':resolve("src"),
+      //'assets':resolve("@/assets"),//如果引用的时候不是通过import，比如模板中的图片路径，那么需要添加'~assets/xxx'
       vue$:"vue/dist/vue.esm.js"
     }
   },

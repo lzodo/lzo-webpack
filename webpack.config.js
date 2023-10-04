@@ -1,184 +1,68 @@
 const path = require("path");
-
-const webpack = require("webpack"); //引入webpack
-const { CleanWebpackPlugin } = require("clean-webpack-plugin");
-const HtmlWebpackPlugin = require("html-webpack-plugin"); //通过 npm 安装
-const miniCssExtractPlugin = require("mini-css-extract-plugin"); //分离css,新建文件引入
-const OptimizeCssAssetsPlugin = require("optimize-css-assets-webpack-plugin"); //压缩css
-const UglifyJsPlugin = require("uglify-js-plugin"); //压缩js
-const uglifyjsWebpackPlugin = require("uglifyjs-webpack-plugin");
-const { resolve } = require("path");
-
-//
-/**
- * 拆分文件: 需要安装webpack-merge 插件进行合并
- * 如果 base.config.js、dev.config.js（dev --config）、prod.config.js(build --config)
- * const baseConfig = require("base.config");
- * module.exports = webpackMerge(baseConfig,{devServer:{},....});将base合并到当前配置
- * 
- */
+const HtmlWebpackPlugin = require("html-webpack-plugin"); // 自动生成html
 
 module.exports = {
-  devServer: { //开放环境先缓存到内存中，资源从内存中读取，打包才会生成到硬盘上
-    //先安装webpack-dev-server  开发服务器配置
-    port: 3007,
-    progress: true,
-    contentBase: "./dist", //设置服务开启资源位置默认是项目根文件夹
-    open: true,
-    //inline:true,//低版本实时刷新
-  },
+  mode: "development",
+  devtool: "inline-source-map",
+  //   entry: "./src/index.js",
   entry: {
+    // 多入口打包
     index: "./src/index.js",
-    app: "./src/app.js",
-    indexTs: "./src/index.ts",
+    print: "./src/print.js",
   },
   output: {
-    filename: "[name].[hash:3].js",
+    filename: "[name].bundle.js",
     path: path.resolve(__dirname, "dist"),
-    //将相对路径转绝对路径,当前路径 + dist
-    //publicPath:"dist/" // 打包的时候在所有涉及到URL的路径前面都会添加dist
+    clean: true,
+    publicPath: "/", // 开发环境不要点，生产环境加个点
   },
-  resolve: {
-    //?! 别名需要研究
-    // 使扩展名可以忽略
-    //extensions: ['.ts', '.tsx', '.js']
-    alias:{
-      '@':resolve("src"),
-      //'assets':resolve("@/assets"),//如果引用的时候不是通过import，比如模板中的图片路径，那么需要添加'~assets/xxx'
-      vue$:"vue/dist/vue.esm.js"
-    }
+  devServer: {
+    // 文件可以从 http://[devServer.host]:[devServer.port]/[output.publicPath]/[output.filename] 访问
+    static: "./dist", // 让 dev server 应从 ./dist 开始查找文件
   },
-  mode: "development",
-  optimization: {
-    //优化项
-    minimizer: [
-      new UglifyJsPlugin({
-        //开发模式下不生效
-        cache: true,
-        parallel: true,
-        sourcMap: true,
-      }),
-      new OptimizeCssAssetsPlugin(),
-    ],
-  },
+  plugins: [
+    new HtmlWebpackPlugin({
+      title: "Development",
+    }),
+  ],
   module: {
     rules: [
-      //解析从右到左，从下到上
-      //css-loader 解析@import 是引入相关文不报错
-      //style-loader 将css 插入到head中
-      //sass-loader 将sass解析成css   与 node-sass一起安装
-      //less-loader 将less解析成css   与 less一起安装
-      //use 当个loader可以用字符串 多个可以用数组，如果需要配置参数可以用json
-
-      //兼容前缀插件autoprefixer 通过 postcss-loader使用,在postcss.config.js 中配置
-      //通过 browserslist 插件设置要兼容的浏览器  装三个
       {
-        test: /\.css|.scss|.less$/,
-        use: [
-          miniCssExtractPlugin.loader,
-          "css-loader",
-          "sass-loader",
-          "less-loader",
-          "postcss-loader",
-        ],
-      },
-      // file-loader 一般用于处理文件或大图片
-      // url-loader 处理小图片可以转文本base64格式
-      {
-        test: /\.(png|jpg|gif)$/,
-        loader: "url-loader",
-        options: {
-          //图片小于指定大小是传成base64,大于的话会自动使用file-loader处理文件，安装但是可以不要配置
-          limit:3000,
-          name: "img/[name]-[hash:5].[ext]", 
-        },
-      },
-      // {
-      //   test: /\.(png|jpg|gif)$/,
-      //   loader: "file-loader",
-      //   options: {
-      //     name: "img/[name]-[hash:5].[ext]", //这里img是存放打包后图片文件夹，结合publicPath来看就是/webBlog/build/img文件夹中，后边接的是打包后图片的命名方式。
-      //   },
-      // },
-      
-      //安装 babel-loader @babel/core  @babel/preset-env
-      {
-        test: /\.js$/,
-        //exclude:排除
-        //include:包含
-        exclude: /node_modules/,
-        loader: "babel-loader",
-        options: {
-          presets: [
-            [
-              "@babel/preset-env",
-              // {
-              // 	"useBuiltIns": "entry"
-              // }
-            ],
-          ],
-          //"plugins": ["@babel/plugin-transform-runtime"]
-        },
+        // module loader 可以链式调用, 'style-loader' 在前，而 'css-loader' 在后
+        test: /\.css$/i,
+        use: ["style-loader", "css-loader"],
       },
       {
-        test: /\.tsx?$/,
-        use: "ts-loader",
-        // include: [resolve('src')]
+        // 使用内置的 Asset Modules
+        test: /\.(png|svg|jpg|jpeg|gif)$/i,
+        type: "asset/resource",
       },
-      //js检测机制 先安装eslint eslint-loader
-      //webpack 设置loader
-      //根目录下新建配置文件 .eslintrc.js 制定规则
-      // {
-      // 	test: /\.js$/,
-      // 	loader: 'eslint-loader',
-      // 	enforce: "pre",
-      // 	include: [path.resolve(__dirname, 'src')], // 指定检查的目录
-      // 	options: { // 这里的配置项参数将会被传递到 eslint 的 CLIEngine
-      // 		//formatter: require('eslint-friendly-formatter') // 指定错误报告的格式规范
-      // 	}
-      // }
+      {
+        // 使用内置的 Asset Modules 解析字体
+        test: /\.(woff|woff2|eot|ttf|otf)$/i,
+        type: "asset/resource",
+      },
     ],
   },
-
-  plugins: [
-    new CleanWebpackPlugin(),
-    new HtmlWebpackPlugin({
-      chunks: ["index"], //添加引入的js,也就是entry中的key,映入各自的js
-      template: "./src/index.html",
-      filename: "index.html",
-      title: "index",
-      hash: true,
-      // minify:{
-      //     collapseWhitespace:true //折叠空白区域 也就是压缩代码
-      // },
-    }),
-    new HtmlWebpackPlugin({
-      chunks: ["app"],
-      template: "./src/app.html",
-      filename: "app.html",
-      title: "app",
-      hash: true,
-    }),
-    new HtmlWebpackPlugin({
-      chunks: ["indexTs"],
-      template: "./src/indexTs.html",
-      filename: "indexTs.html",
-      title: "index-ts",
-      hash: true,
-    }),
-    new miniCssExtractPlugin({
-      //配置完成需要在响应的loder use 前的style-loader替换成miniCssExtractPlugin.loader 的配置
-      // filename: 'style.[name].css',
-      chunkFilename: "[name].css", //入口文件分别生成引入各种的css
-    }),
-    // new miniCssExtractPlugin({
-    // 	chunks:['app'],
-    // 	filename: 'style.app.css',
-    // })
-    // 压缩js
-    new uglifyjsWebpackPlugin(),
-
-    // 其他
-    new webpack.BannerPlugin('横幅一些提示内容')
-  ],
+  // 多入口打包时配置，不然会有问题
+  optimization: {
+    runtimeChunk: "single",
+  },
 };
+
+/**
+ *  1、设置入口文件，输出位置
+ *  2、配置loading，识别转换不认识的文件
+ *  3、配置插件，HtmlWebpackPlugin 生成html首页
+ *  4、clean: true, 打包前清空dist文件夹
+ *  5、配置环境 mode: 'development'
+ *  5、打包生成生产代码
+ *  5、到代码分离优化
+ */
+
+/**
+ *  开发环境
+ *  1、通过不同环境，判断是否要设置 devtool: 'inline-source-map' 映射
+ *  -、安装 webpack-dev-server，配置 web server
+ *  -、通过 express（ express webpack-dev-middleware） 配置服务
+ */

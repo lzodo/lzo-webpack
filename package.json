@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "webpack --watch",
-    "build": "webpack",
+    "dev": "webpack server",
+    "build": "webpack --env goal=local --env development --progress",
     "server": "node server.js"
   },
   "repository": {
@@ -29,6 +29,7 @@
     "webpack-dev-server": "^4.15.1"
   },
   "dependencies": {
-    "lodash": "^4.17.21"
+    "lodash": "^4.17.21",
+    "vue": "^3.3.4"
   }
 }

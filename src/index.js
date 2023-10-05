@@ -1,14 +1,25 @@
 import _ from "lodash";
+// import { createApp } from "vue";
+import { createApp } from "../node_modules/vue/dist/vue.esm-browser"; //这个才能直接用 template
 import "./assets/styles/global.css";
 import Icon from "./assets/images/1.jpg";
 import printMe from "./print.js";
+import "./utils/testhot";
+createApp({
+  template: "<div>{{msg}}</div>",
+  data() {
+    return {
+      msg: "8ddd",
+    };
+  },
+}).mount(document.querySelector("#app"));
 
 function component() {
   const element = document.createElement("div");
   const btn = document.createElement("button");
 
   // 测试第三方库
-  element.innerHTML = _.join(["Hello", "webpack111"], " ");
+  element.innerHTML = _.join(["Hello", "webp"], " ");
 
   // 将图像添加到已经存在的 div 中。
   const myIcon = new Image();
@@ -24,3 +35,10 @@ function component() {
 }
 
 document.body.appendChild(component());
+
+// 热跟新配置
+if (module.hot) {
+  module.hot.accept("./utils/testhot.js", function () {
+    console.log("额外做一些事情");
+  });
+}

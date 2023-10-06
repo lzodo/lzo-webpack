@@ -2,9 +2,12 @@ import _ from "lodash";
 // import { createApp } from "vue";
 import { createApp } from "../node_modules/vue/dist/vue.esm-browser"; //这个才能直接用 template
 import "./assets/styles/global.css";
+import "./assets/styles/global.less";
+import "./assets/styles/global.scss";
 import Icon from "./assets/images/1.jpg";
 import printMe from "./print.js";
 import "./utils/testhot";
+
 createApp({
   template: "<div>{{msg}}</div>",
   data() {

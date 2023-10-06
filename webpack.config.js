@@ -73,7 +73,13 @@ module.exports = {
       {
         // 多个loder顺序从右往左
         test: /\.css|.scss|.less$/i,
-        use: ["style-loader", "css-loader", "sass-loader", "less-loader"], // css 只负责解析，解析好后 style 负责插入到页面
+        use: [
+          "style-loader",
+          "css-loader",
+          "sass-loader",
+          "less-loader",
+          "postcss-loader", // autoprefixer 配合 postcss-loader 添加浏览器前缀
+        ], // css 只负责解析，解析好后 style 负责插入到页面
       },
       {
         // 使用内置的 Asset Modules

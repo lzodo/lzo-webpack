@@ -1,15 +1,19 @@
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin"); // 自动生成html
+const miniCssExtractPlugin = require("mini-css-extract-plugin");
+const OptimizeCssAssetsPlugin = require("optimize-css-assets-webpack-plugin"); //压缩css
+const UglifyJsPlugin = require("uglify-js-plugin"); //压缩js
+const uglifyjsWebpackPlugin = require("uglifyjs-webpack-plugin");
+const { VueLoaderPlugin } = require("vue-loader/dist/index");
+const { DefinePlugin, ProvidePlugin } = require("webpack");
 
 // 使用env就用缓存函数
 module.exports = {
+  // 开发环境 和 生产环境内部都会设置一大堆默认值
   mode: "development",
   devtool: "inline-source-map",
   //   entry: "./src/index.js",
   entry: {
-    // // webpack-dev-middleware启用热更新
-    hot: "webpack/hot/dev-server.js", // 热 webpack-dev-middleware启用热更新
-    client: "webpack-dev-server/client/index.js?hot=true&live-reload=true", // 热
     // 多入口打包,两个入口文件如果都使用了lodash，那么打包后会有两份lodash代码被打包
     index: "./src/index.js",
     print: "./src/print.js",
@@ -44,6 +48,16 @@ module.exports = {
         },
       },
     },
+    //优化项
+    minimizer: [
+      new UglifyJsPlugin({
+        //开发模式下不生效
+        cache: true,
+        parallel: true,
+        sourcMap: true,
+      }),
+      new OptimizeCssAssetsPlugin(),
+    ],
   },
   output: {
     filename: "[name].[contenthash].bundle.js", // 添加hash 尽量避免浏览器缓存
@@ -63,18 +77,67 @@ module.exports = {
     // client: true,
   },
   plugins: [
+    // 生成html
     new HtmlWebpackPlugin({
       title: "title",
-      template: "index.html",
+      template: "index.html", // 他自己有一个默认模板
+    }),
+
+    // 分离css
+    new miniCssExtractPlugin({
+      //配置完成需要在响应的loder use 前的style-loader替换成miniCssExtractPlugin.loader 的配置
+      // filename: 'style.[name].css',
+      chunkFilename: "[name].style.css", //入口文件分别生成引入各种的css
+    }),
+
+    // 压缩js
+    new uglifyjsWebpackPlugin(),
+
+    // vue 支持
+    new VueLoaderPlugin(),
+
+    // 定义变量，默认注入了 process
+    // DefinePlugin通过定义不同的变量值，使我们在开发和发布的时候执行不同的代码。例如一个典型的变量process.env.NODE_ENV，会拿到mode值。
+    new DefinePlugin({
+      BASE_URL: "'./'", // value 是一段可执行代码
+      globalMsg: "'注入全局变量，globalMsg，任何地方可以直接使用'",
+    }),
+
+    // 在使用时将不再需要import和require进行引入，直接使用即可。
+    new ProvidePlugin({
+      ProvidePluginApi: [
+        path.join(__dirname, "./src/utils/tool.js"),
+        "default",
+      ],
     }),
   ],
+  resolve: {
+    // 使扩展名可以忽略
+    extensions: [
+      ".js",
+      ".json",
+      ".wasm",
+      ".vue",
+      ".css",
+      ".less",
+      ".scss",
+      ".ts",
+    ],
+    // 别名 默认就是 node_module, 所以 import xx from 'vue' 可以定位到 node_module 下的 vue
+    alias: {
+      "@": path.resolve(__dirname, "./src"), // 一定是配置文件所在位置下的src
+      //'assets':path.resolve("@/assets"),//如果引用的时候不是通过import，比如模板中的图片路径，那么需要添加'~assets/xxx'
+      // vue$: "vue/dist/vue.esm.js",
+    },
+  },
   module: {
     rules: [
       {
         // 多个loder顺序从右往左
         test: /\.css|.scss|.less$/i,
         use: [
-          "style-loader",
+          // "style-loader",
+          miniCssExtractPlugin.loader,
           "css-loader",
           "sass-loader",
           "less-loader",
@@ -84,12 +147,38 @@ module.exports = {
       {
         // 使用内置的 Asset Modules
         test: /\.(png|svg|jpg|jpeg|gif)$/i,
-        type: "asset/resource",
+        type: "asset", // asset/resource(生成单独文件) asset/inline(生成base64) asset(自动判断用前面的哪个)
+        parser: {
+          dataUrlCondition: {
+            maxSize: 1 * 1024,
+          },
+        },
+        generator: {
+          filename: "img/[name]_[hash][ext]", // 如果生成图片文件
+        },
       },
       {
         // 使用内置的 Asset Modules 解析字体
         test: /\.(woff|woff2|eot|ttf|otf)$/i,
         type: "asset/resource",
+      },
+      {
+        // 转换 es6 ts jsx 等文件
+        test: /\.js$/i,
+        exclude: /node_modules/,
+        loader: "babel-loader",
+        options: {
+          presets: [
+            [
+              "@babel/preset-env", // env es6预设，react react预设，typescript ts预设
+            ],
+          ],
+        },
+      },
+      {
+        // vue 处理, vue 还要额外配置插件 VueLoaderPlugin
+        test: /\.vue$/i,
+        use: ["vue-loader"],
       },
     ],
   },

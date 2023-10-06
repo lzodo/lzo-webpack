@@ -1,5 +1,10 @@
 import _ from "lodash";
 
-export const useLodash = () => {
-  return _.join([12, 34]);
+const useLodash = () => {
+  console.log(_.join([56, 78]));
+  return _.join([56, 78]);
+};
+
+export default {
+  useLodash,
 };

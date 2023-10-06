@@ -1,21 +1,23 @@
 import _ from "lodash";
-// import { createApp } from "vue";
-import { createApp } from "../node_modules/vue/dist/vue.esm-browser"; //这个才能直接用 template
+// import { createApp } from "../node_modules/vue/dist/vue.esm-browser"; //这个才能直接用 template
+import { createApp } from "vue";
+import App from "./App";
 import "./assets/styles/global.css";
-import "./assets/styles/global.less";
-import "./assets/styles/global.scss";
+import "./assets/styles/global-less.less";
+import "./assets/styles/global-scss.scss";
 import Icon from "./assets/images/1.jpg";
 import printMe from "./print.js";
-import "./utils/testhot";
+import "@/utils/testhot";
 
-createApp({
-  template: "<div>{{msg}}</div>",
-  data() {
-    return {
-      msg: "8ddd",
-    };
-  },
-}).mount(document.querySelector("#app"));
+createApp(App).mount(document.querySelector("#app"));
+// {
+//   template: "<div>{{msg}}</div>",
+//   data() {
+//     return {
+//       msg: "8ddd",
+//     };
+//   },
+// }
 
 function component() {
   const element = document.createElement("div");

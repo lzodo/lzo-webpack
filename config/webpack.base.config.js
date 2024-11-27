@@ -3,6 +3,7 @@ const HtmlWebpackPlugin = require("html-webpack-plugin"); // 自动生成html
 const miniCssExtractPlugin = require("mini-css-extract-plugin");
 const { VueLoaderPlugin } = require("vue-loader/dist/index");
 const { DefinePlugin, ProvidePlugin } = require("webpack");
+const CopyPlugin = require("copy-webpack-plugin");
 
 // 使用env就用缓存函数
 module.exports = {
@@ -60,7 +61,8 @@ module.exports = {
     new miniCssExtractPlugin({
       //配置完成需要在响应的loder use 前的style-loader替换成miniCssExtractPlugin.loader 的配置
       // filename: 'style.[name].css',
-      chunkFilename: "[name].style.css", //入口文件分别生成引入各种的css
+      // chunkFilename: "[name].style.css", //入口文件分别生成引入各种的css
+      filename: "css/[name]-[contenthash:5].css",
     }),
 
     // vue 支持
@@ -78,6 +80,19 @@ module.exports = {
       ProvidePluginApi: [
         path.join(__dirname, "../src/utils/tool.js"),
         "default",
+      ],
+    }),
+
+    new CopyPlugin({
+      // 应用 复制文件 插件
+      patterns: [
+        {
+          from: path.resolve(__dirname, "../public"),
+          to: "./",
+          globOptions: {
+            ignore: ["**/*.html"],
+          },
+        },
       ],
     }),
   ],
@@ -124,7 +139,7 @@ module.exports = {
           },
         },
         generator: {
-          filename: "img/[name]_[hash][ext]", // 如果生成图片文件
+          filename: "imglzo/[name]_[hash][ext]", // 如果生成图片文件
         },
       },
       {

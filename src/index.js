@@ -5,6 +5,7 @@ import App from "./App";
 import "./assets/styles/global.css";
 import "./assets/styles/global-less.less";
 import "./assets/styles/global-scss.scss";
+import "./assets/styles/b.module.less";
 import Icon from "./assets/images/1.jpg";
 import printMe from "./print.js";
 import "@/utils/testhot";

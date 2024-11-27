@@ -4,3 +4,7 @@
     box-sizing: border-box;
     color:#ff000066
 }
+
+body{
+    background: url(../images/3.jpg) no-repeat center;
+}

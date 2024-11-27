@@ -7,7 +7,7 @@
 <script setup>
 import { ref } from "vue";
 
-let msg = ref("8ddd");
+let msg = ref("8ddd22");
 </script>
 
 <style lang="scss" scoped></style>
